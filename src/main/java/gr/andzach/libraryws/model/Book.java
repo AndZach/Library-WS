@@ -2,6 +2,10 @@ package gr.andzach.libraryws.model;
 
 import java.io.Serializable;
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import java.util.Date;
 
 
@@ -14,6 +18,7 @@ import java.util.Date;
 @NamedQuery(name="Book.findAll", query="SELECT b FROM Book b")
 public class Book implements Serializable {
 	private static final long serialVersionUID = 1L;
+	
 	
 	private int bookID;
 	private String author;

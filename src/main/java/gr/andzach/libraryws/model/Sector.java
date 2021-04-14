@@ -2,6 +2,9 @@ package gr.andzach.libraryws.model;
 
 import java.io.Serializable;
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import java.util.List;
 
 
@@ -14,6 +17,7 @@ import java.util.List;
 @NamedQuery(name="Sector.findAll", query="SELECT s FROM Sector s")
 public class Sector implements Serializable {
 	private static final long serialVersionUID = 1L;
+	
 	private int sectorID;
 	private String description;
 	private String name;
@@ -55,6 +59,7 @@ public class Sector implements Serializable {
 
 	//bi-directional many-to-one association to Book
 	@OneToMany(mappedBy="sector")
+	@JsonBackReference
 	public List<Book> getBooks() {
 		return this.books;
 	}
