@@ -7,15 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import gr.andzach.libraryws.model.Book;
+import gr.andzach.libraryws.model.Sector;
 
-public interface BookRepository extends JpaRepository<Book, Long>{
+public interface SectorRepository extends JpaRepository<Sector, Long>{
+	
+	Optional<Sector> findByName(String name);
 
-	Optional<Book> findByTitle(String title);
-	
-	List<Book> findByAuthor(String author);
-	
-	List<Book> findBySectorSectorID(Integer id);
+	//List<Book> findSectorBooksBySectorID(Integer sectorID);
 	
 	
-
+	
 }

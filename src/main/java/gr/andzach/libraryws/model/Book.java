@@ -4,40 +4,52 @@ import java.io.Serializable;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
 
 
-/**
- * The persistent class for the books database table.
- * 
- */
 @Entity
 @Table(name="books")
-@NamedQuery(name="Book.findAll", query="SELECT b FROM Book b")
 public class Book implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long bookID;
 	
-	private int bookID;
 	private String author;
-	private int pages;
+	private Integer pages;
 	private String title;
-	private Date yearOfPublish;
+	
+	//bi-directional many-to-one association to Sector
+	@ManyToOne
+	@JoinColumn(name="Sector")
 	private Sector sector;
 
 	public Book() {
 	}
+	
+
+	public Book(Long bookID, String author, Integer pages, String title, Sector sector) {
+		super();
+		this.bookID = bookID;
+		this.author = author;
+		this.pages = pages;
+		this.title = title;
+		this.sector = sector;
+	}
 
 
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	public int getBookID() {
+
+	public Long getBookID() {
 		return this.bookID;
 	}
 
-	public void setBookID(int bookID) {
+	public void setBookID(Long bookID) {
 		this.bookID = bookID;
 	}
 
@@ -51,11 +63,11 @@ public class Book implements Serializable {
 	}
 
 
-	public int getPages() {
+	public Integer getPages() {
 		return this.pages;
 	}
 
-	public void setPages(int pages) {
+	public void setPages(Integer pages) {
 		this.pages = pages;
 	}
 
@@ -69,19 +81,6 @@ public class Book implements Serializable {
 	}
 
 
-	@Temporal(TemporalType.DATE)
-	public Date getYearOfPublish() {
-		return this.yearOfPublish;
-	}
-
-	public void setYearOfPublish(Date yearOfPublish) {
-		this.yearOfPublish = yearOfPublish;
-	}
-
-
-	//bi-directional many-to-one association to Sector
-	@ManyToOne
-	@JoinColumn(name="SectorID")
 	public Sector getSector() {
 		return this.sector;
 	}

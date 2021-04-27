@@ -4,41 +4,48 @@ import java.io.Serializable;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
 
-/**
- * The persistent class for the sectors database table.
- * 
- */
 @Entity
 @Table(name="sectors")
-@NamedQuery(name="Sector.findAll", query="SELECT s FROM Sector s")
 public class Sector implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
-	private int sectorID;
+
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long sectorID;
 	private String description;
 	private String name;
+	
+	//bi-directional many-to-one association to Book
+	@OneToMany(mappedBy="sector")
+	@JsonBackReference
 	private List<Book> books;
 
 	public Sector() {
 	}
+	
+	public Sector(Long id, String description, String name) {
+		super();
+		this.sectorID=id;
+		this.description = description;
+		this.name = name;
+	}
 
 
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	public int getSectorID() {
+	public Long getSectorID() {
 		return this.sectorID;
 	}
 
-	public void setSectorID(int sectorID) {
+	public void setSectorID(Long sectorID) {
 		this.sectorID = sectorID;
 	}
 
-
-	@Lob
 	public String getDescription() {
 		return this.description;
 	}
@@ -57,9 +64,6 @@ public class Sector implements Serializable {
 	}
 
 
-	//bi-directional many-to-one association to Book
-	@OneToMany(mappedBy="sector")
-	@JsonBackReference
 	public List<Book> getBooks() {
 		return this.books;
 	}

@@ -1,10 +1,15 @@
 package gr.andzach.libraryws.controller;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import gr.andzach.libraryws.dto.CreateBookDto;
 import gr.andzach.libraryws.model.Book;
 import gr.andzach.libraryws.repository.BookRepository;
 import gr.andzach.libraryws.service.BookService;
@@ -32,84 +38,56 @@ public class BookController {
 	@Autowired
 	private BookService bookService;
 	
-	@Autowired
-	private BookRepository bookRepos;
 	
-//	@RequestMapping(path = "/", method = RequestMethod.GET)
-	@GetMapping(path="")
- 	public ResponseEntity getBooks() {
+	@RequestMapping(path = "", method = RequestMethod.GET)
+ 	public ResponseEntity<List<Book>> getBooks() {
 		List<Book> books = bookService.getBooks();
-		if(books.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No books were found!");
-		} else {
-			return ResponseEntity.ok(bookService.getBooks());
-		}
+		return ResponseEntity.ok(bookService.getBooks());
 	}
 	
-	@GetMapping(path = "/sector"/* , params= {"sectorId"} */)
-	public ResponseEntity getBooksBySector(@RequestParam(/* required = true, */ defaultValue = "") Integer sectorId) {
+	@GetMapping("/{id}")
+	public ResponseEntity<Book> getBook(@PathVariable Long id) {
+		return ResponseEntity.ok(bookService.getBook(id));
+	}
+	
+	@GetMapping(path = "", params= {"sectorId"} )
+	public ResponseEntity<List<Book>> getBooksBySector(@RequestParam Integer sectorId) {
 		List<Book> booksBySector = bookService.getBooksBySectorId(sectorId);
-		if(booksBySector.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No books were found in "+sectorId+" Sector...");
-		} else {
-			return ResponseEntity.ok(booksBySector);
-		}
-		
+			return ResponseEntity.ok(booksBySector); 
 	}
 	
-	@GetMapping(path = "/{id}")
-	public ResponseEntity<Book> getBook(@PathVariable Integer id) {
-		Optional<Book> book = bookService.getBook(id);
-		if (book.isPresent()) {
-			return ResponseEntity.ok(book.get());
-		} else {
-			return new ResponseEntity(HttpStatus.NOT_FOUND);
-		}
+	@GetMapping(path="", params = "title")
+	public ResponseEntity<Book> getBookByTitle(@RequestParam String title) {
+		Book book = bookService.getBookByTitle(title);
+			return ResponseEntity.ok(book);
 	}
 	
-	@GetMapping(path="/{title}")
-	public ResponseEntity<Book> getBookByTitle(@PathVariable String title) {
-		Optional<Book> book = bookService.getBookByTitle(title);
-		if (book.isPresent()) {
-			return ResponseEntity.ok(book.get());
-		} else {
-			return new ResponseEntity(HttpStatus.NOT_FOUND);
-		}
-	}
-	
-	@PostMapping(path="/", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity createBook(@RequestBody Book book) {
-		if (bookService.getBook(book.getBookID()).isEmpty()) {
-			Book savedBook = bookRepos.save(book);
-			return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
-		} else {
-			return ResponseEntity.badRequest().body("There is already a book with ID: "+book.getBookID());
-		}
+	@PostMapping(path="", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Book> createBook(@RequestBody CreateBookDto book, HttpServletRequest request) {
+			Book createdBook = bookService.createBook(book);
+			String stringURI = request.getRequestURL().toString() + createdBook.getBookID();
+			HttpHeaders responseHeaders = new HttpHeaders();
+			try {
+				URI newURI = new URI(stringURI);
+				responseHeaders.setLocation(newURI);
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+			
+			 return ResponseEntity.status(HttpStatus.CREATED).headers(responseHeaders).body(createdBook);
 	}
 	
 	@PutMapping(path="/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity updateBook(@PathVariable Integer id, @RequestBody Book book) {
-		Optional<Book> bookToUpdate = bookService.getBook(id);
-		if (bookToUpdate.isPresent() ) {
-			Book updatedBook = bookRepos.save(book);
+	public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody CreateBookDto book) {
+			Book updatedBook = bookService.updateBook(id, book);
 			return ResponseEntity.status(HttpStatus.OK).body(updatedBook);
-		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no book with id: "+id);
-		}
 	}
 	
 	@DeleteMapping(path="/{id}")
-	public ResponseEntity deleteBook(@PathVariable Integer id) {
-		if(bookService.getBook(id).isPresent()) {
-			bookRepos.deleteById(id);
+	public ResponseEntity deleteBook(@PathVariable Long id) {
+			bookService.deleteBook(id);
 			return ResponseEntity.ok("Book with ID: "+id+" was deleted!");
-		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no book with id: "+id);
-		}
-		
 	}
-	
-
 	
 
 }
